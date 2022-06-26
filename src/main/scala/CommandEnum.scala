@@ -7,6 +7,9 @@ object CommandEnum extends Enumeration:
   val Astronomy = Value("ASTRONOMY", true)
   val Timezone = Value("TIMEZONE", true)
   val Football = Value("FOOTBALL", true)
+  val READ_SHEET = Value("READ-SHEET", true)
+  val READ_ROW = Value("READ-ROW", true)
+  val DELETE = Value("DELETE", true)
   case class CommandEnumVal(value: String, continue: Boolean) extends Val(nextId, value)
   final protected def Value(value: String, continue: Boolean) = new CommandEnumVal(value, continue)
 
