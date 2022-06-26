@@ -12,38 +12,38 @@ object ResponseHandler:
     command: String
   ): JsonParser[? >: CurrentResult with List[Hour] with AstronomyResult with Location with List[Matches] <: Equals] =
     command match
-      case "current" => new JsonParsedCurrent(response)
-      case "forecast" => new JsonParsedForecast(response)
-      case "astronomy" => new JsonParsedAstronomy(response)
-      case "timezone" => new JsonParsedTimeZone(response)
-      case "football" => new JsonParsedFootball(response)
+      case "current" => new JsonParsedCurrent(response.text(),response.headers)
+      case "forecast" => new JsonParsedForecast(response.text(),response.headers)
+      case "astronomy" => new JsonParsedAstronomy(response.text(),response.headers)
+      case "timezone" => new JsonParsedTimeZone(response.text(),response.headers)
+      case "football" => new JsonParsedFootball(response.text(),response.headers)
 
   def createParsedCurrent(command: String = "current", commandArguments: List[String]): Future[JsonParsedCurrent] =
     val response = makeApiRequest(command, commandArguments)
 
     response.statusCode match
-      case x if 200 until 300 contains x => Future.successful(new JsonParsedCurrent(response))
+      case x if 200 until 300 contains x => Future.successful(new JsonParsedCurrent(response.text(),response.headers))
       case _ => Future.failed(new RequestFailedException(response))
 
   def createParsedForecast(command: String = "forecast", commandArguments: List[String]): Future[JsonParsedForecast] =
     val response = makeApiRequest(command, commandArguments)
 
     response.statusCode match
-      case x if 200 until 300 contains x => Future.successful(new JsonParsedForecast(response))
+      case x if 200 until 300 contains x => Future.successful(new JsonParsedForecast(response.text(),response.headers))
       case _ => Future.failed(new RequestFailedException(response))
 
   def createParsedFootball(command: String = "football", commandArguments: List[String]): Future[JsonParsedFootball] =
     val response = makeApiRequest(command, commandArguments)
 
     response.statusCode match
-      case x if 200 until 300 contains x => Future.successful(new JsonParsedFootball(response))
+      case x if 200 until 300 contains x => Future.successful(new JsonParsedFootball(response.text(),response.headers))
       case _ => Future.failed(new RequestFailedException(response))
 
   def createParsedTimeZone(command: String = "timezone", commandArguments: List[String]): Future[JsonParsedTimeZone] =
     val response = makeApiRequest(command, commandArguments)
 
     response.statusCode match
-      case x if 200 until 300 contains x => Future.successful(new JsonParsedTimeZone(response))
+      case x if 200 until 300 contains x => Future.successful(new JsonParsedTimeZone(response.text(),response.headers))
       case _ => Future.failed(new RequestFailedException(response))
 
   def createParsedAstronomy(
@@ -53,5 +53,5 @@ object ResponseHandler:
     val response = makeApiRequest(command, commandArguments)
 
     response.statusCode match
-      case x if 200 until 300 contains x => Future.successful(new JsonParsedAstronomy(response))
+      case x if 200 until 300 contains x => Future.successful(new JsonParsedAstronomy(response.text(),response.headers))
       case _ => Future.failed(new RequestFailedException(response))
