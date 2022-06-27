@@ -1,3 +1,4 @@
+import Service.{readRow, visualizeRow}
 import Utils.mkRegex
 import org.apache.poi.hssf.usermodel.HSSFWorkbook
 import org.apache.poi.ss.usermodel.Cell
@@ -16,7 +17,6 @@ import java.io.{File, FileInputStream}
 
 object Console:
   def main(args: Array[String]): Unit =
-
     print("$ ")
 
     while continue(readLine().toUpperCase()) do print("$ ")
@@ -37,6 +37,14 @@ object Console:
       case exitR(_) => {
         println("The programme ends!")
         CommandEnum.Exit.continue
+      }
+      case readSheetR(_) => {
+        caller(commandLine, CommandEnum.READ_SHEET.value, Service.printSheet, true)
+        CommandEnum.READ_SHEET.continue
+      }
+      case readRowR(_) => {
+        caller(commandLine, CommandEnum.READ_ROW.value, Service.printRow, true)
+        CommandEnum.READ_ROW.continue
       }
       case helpR(_) => {
         caller(commandLine, CommandEnum.Help.value, Service.help)
@@ -62,14 +70,6 @@ object Console:
         caller(commandLine, CommandEnum.Football.value, Service.football)
         CommandEnum.Football.continue
       }
-      case readSheetR(_) => {
-        caller(commandLine, CommandEnum.READ_SHEET.value, Service.printSheet)
-        CommandEnum.READ_SHEET.continue
-      }
-      case readRowR(_) => {
-        caller(commandLine, CommandEnum.READ_ROW.value, Service.printRow)
-        CommandEnum.READ_ROW.continue
-      }
       case deleteR(_) => {
         caller(commandLine, CommandEnum.DELETE.value, Service.delete)
         CommandEnum.DELETE.continue
@@ -86,8 +86,13 @@ object Console:
     val args = commandLine.substring(0, index - command.size) + commandLine.substring(index)
     args.split(' ').toList.filter(!_.isBlank)
 
-  def caller(commandLine: String, command: String, executioner: List[String] => Future[Unit]): Future[Unit] =
-    Service.checkArgs(extractArguments(commandLine, command), executioner).recoverWith {
+  def caller(
+    commandLine: String,
+    command: String,
+    executioner: List[String] => Future[Unit],
+    acceptsTwoCommands: Boolean = false
+  ): Future[Unit] =
+    Service.checkArgs(extractArguments(commandLine, command), executioner, acceptsTwoCommands).recoverWith {
       case e: IllegalStateException =>
         Future.successful(
           println(
@@ -96,11 +101,12 @@ object Console:
         )
       case e: RequestFailedException =>
         Future.successful(println("There was an error with the request!" + e.getMessage))
+      case e: NoSuchElementException =>
+        Future.successful(println("The requested element was not found!" + e.getMessage))
       case e: Exception =>
         Future.successful(
           println(
-            "Unknown error! Please enter 'help' in order to see detailed information about the supported operations." + e
-              .getMessage()
+            "Unknown error! Please enter 'help' in order to see detailed information about the supported operations." + e.getMessage
           )
         )
     }

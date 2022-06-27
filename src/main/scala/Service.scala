@@ -1,3 +1,4 @@
+import Service.findsSheetByCommand
 import Utils.mkRegex
 import org.apache.poi.xssf.usermodel.{XSSFSheet, XSSFWorkbook}
 import requests.Response
@@ -110,8 +111,9 @@ object Service:
     then Future.failed(new IllegalStateException("Command cannot contains special symbols and digits."))
     else
       try
-        val sheet = readSheet(findsSheetByCommand(commandArguments(0)))
-        Future.successful(visualizeSheet(sheet))
+        val tuple: (Int, List[String] => List[(String, Object)]) = findsSheetByCommand(commandArguments(0))
+        val sheet = readSheet(tuple._1)
+        Future.successful(visualizeSheet(sheet, tuple._2))
       catch
         case e: Exception =>
           Future.failed(e)
@@ -123,8 +125,9 @@ object Service:
     then Future.failed(new IllegalStateException("Command cannot contains special symbols and digits."))
     else
       try
-        val row = readRow(findsSheetByCommand(commandArguments(0)), commandArguments(1).toInt)
-        Future.successful(visualizeRow(row))
+        val tuple: (Int, List[String] => List[(String, Object)]) = findsSheetByCommand(commandArguments(0))
+        val row = readRow(commandArguments(1).toInt, tuple._1)
+        Future.successful(visualizeRow(row, tuple._2))
       catch
         case e: Exception =>
           Future.failed(e)
@@ -146,8 +149,12 @@ object Service:
       )
     println("History was successfully deleted!")
 
-  def checkArgs(args: List[String], executioner: List[String] => Future[Unit]): Future[Unit] =
-    if args.filter(CommandEnum.isCommand(_)).size != 0 then
+  def checkArgs(
+    args: List[String],
+    executioner: List[String] => Future[Unit],
+    acceptsTwoCommands: Boolean
+  ): Future[Unit] =
+    if (args.filter(CommandEnum.isCommand(_)).size != 0) && !acceptsTwoCommands then
       Future { throw new IllegalStateException("You can enter only one command per time!") }
     else executioner(args)
 
@@ -171,13 +178,21 @@ object Service:
     readSheet(sheetNumber, myWorkbook)
 
   def readRow(rowNumber: Int, sheet: XSSFSheet): List[String] =
-    val row = sheet.getRow(rowNumber)
-    List(
-      row.getCell(0),
-      row.getCell(1),
-      row.getCell(2),
-      row.getCell(3)
-    ).map(_.getStringCellValue)
+    if sheet.getLastRowNum == -1
+    then throw new NoSuchElementException("There is no history for this command!")
+    else if sheet.getLastRowNum < rowNumber || rowNumber < 1
+    then
+      throw new IllegalStateException(
+        "Wrong row number! The number must be positive and not higher than the number of the last row."
+      )
+    else
+      val row = sheet.getRow(rowNumber)
+      List(
+        row.getCell(0).getNumericCellValue.toString,
+        row.getCell(1).getStringCellValue,
+        row.getCell(2).getStringCellValue,
+        row.getCell(3).getStringCellValue
+      )
 
   def readRow(rowNumber: Int, shееtNumber: Int): List[String] =
     val myFile = new File("test.xlsx")
@@ -190,18 +205,43 @@ object Service:
 
     readRow(rowNumber, mySheet)
 
-  def findsSheetByCommand(command: String): Int = command match
-    case "current" => 1
-    case "forecast" => 2
-    case "astronomyR" => 3
-    case "timezone" => 4
-    case "football" => 5
-    case _ => throw new IllegalStateException("Wrong command for searching in sheet!")
+  def findsSheetByCommand(command: String): (Int, List[String] => List[(String, Object)]) =
+    command match
+      case CommandEnum.Current.value => (0, jsonToCurrent)
+      case CommandEnum.Forecast.value => (1, jsonToForecast)
+      case CommandEnum.Astronomy.value => (2, jsonToAstronomy)
+      case CommandEnum.Timezone.value => (3, jsonToTimeZone)
+      case CommandEnum.Football.value => (4, jsonToFootball)
+      case _ => throw new IllegalStateException("Wrong command for searching in sheet!")
 
-  def visualizeSheet(sheet: List[List[String]]): Unit = ???
-  def visualizeRow(row: List[String]): Unit = ???
+  def visualizeSheet(sheet: List[List[String]], converter: List[String] => List[(String, Object)]): Unit =
+    if sheet.isEmpty
+    then println("There is no history for this command!")
+    else
+      val args = converter(sheet(0))
+      Table.plotTable(args.map(_._1) +: sheet.map(converter(_).map(_._2)))
+
+  def visualizeRow(row: List[String], converter: List[String] => List[(String, Object)]): Unit =
+    val args = converter(row)
+    Table.plotTable(List(args.map(_._1), args.map(_._2)))
 //    List(List("id", row(0)), List("command", row(1))) :: row.last
 
 //  def stringToCurrentResult(json: String): CurrentResult = JsonParsedCurrent(
 //    Response("", 0, "", null, null, Some(json))
 //  )
+
+  def jsonToCurrent(row: List[String]): List[(String, Object)] =
+    new JsonParsedCurrent(row(2), Map[String, Seq[String]]()).parsedValue.myArgs
+  def jsonToAstronomy(row: List[String]): List[(String, Object)] =
+    new JsonParsedAstronomy(row(2), Map[String, Seq[String]]()).parsedValue.myArgs
+  def jsonToFootball(row: List[String]): List[(String, Object)] =
+    val argsList: List[List[(String, Object)]] =
+      new JsonParsedFootball(row(2), Map[String, Seq[String]]()).parsedValue.map(_.myArgs)
+    if argsList.isEmpty
+    then throw new NoSuchElementException("There are no matches!")
+    else argsList(0).map(_._1) // TODO fix matches
+
+  def jsonToForecast(row: List[String]): List[(String, Object)] =
+    new JsonParsedForecast(row(2), Map[String, Seq[String]]()).parsedValue.map(_.myArgs).flatten // TODO fix forecast
+  def jsonToTimeZone(row: List[String]): List[(String, Object)] =
+    new JsonParsedTimeZone(row(2), Map[String, Seq[String]]()).parsedValue.myArgs
