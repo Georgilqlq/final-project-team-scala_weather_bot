@@ -106,7 +106,7 @@ object Console:
       case e: Exception =>
         Future.successful(
           println(
-            "Unknown error! Please enter 'help' in order to see detailed information about the supported operations." + e.getMessage
+            "Unknown error! Please enter 'help' in order to see detailed information about the supported operations." + e
           )
         )
     }

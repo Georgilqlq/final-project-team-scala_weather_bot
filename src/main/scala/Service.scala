@@ -112,7 +112,7 @@ object Service:
     then Future.failed(new IllegalStateException("Command cannot contains special symbols and digits."))
     else
       try
-        val tuple: (Int, List[String] => List[(String, List[Object])]) = findsSheetByCommand(commandArguments(0))
+        val tuple: (Int, List[String] => List[List[Object]]) = findsSheetByCommand(commandArguments(0))
         val sheet = readSheet(tuple._1)
         println()
         Future.successful(visualizeSheet(sheet, tuple._2))
@@ -127,7 +127,7 @@ object Service:
     then Future.failed(new IllegalStateException("Command cannot contains special symbols and digits."))
     else
       try
-        val tuple: (Int, List[String] => List[(String, List[Object])]) = findsSheetByCommand(commandArguments(0))
+        val tuple: (Int, List[String] => List[List[Object]]) = findsSheetByCommand(commandArguments(0))
         val row = readRow(commandArguments(1).toInt, tuple._1)
         Future.successful(visualizeRow(row, tuple._2))
       catch
@@ -171,7 +171,7 @@ object Service:
 
   def readSheet(sheetNumber: Int, workbook: XSSFWorkbook): List[List[String]] =
     val mySheet = workbook.getSheetAt(sheetNumber)
-    List.range(1, mySheet.getLastRowNum).map(readRow(_, mySheet))
+    List.range(1, mySheet.getLastRowNum + 1).map(readRow(_, mySheet))
 
   def readSheet(sheetNumber: Int): List[List[String]] =
     val myFile = new File("test.xlsx")
@@ -207,7 +207,7 @@ object Service:
 
     readRow(rowNumber, mySheet)
 
-  def findsSheetByCommand(command: String): (Int, List[String] => List[(String, List[Object])]) =
+  def findsSheetByCommand(command: String): (Int, List[String] => List[List[Object]]) =
     command match
       case CommandEnum.Current.value => (0, jsonToCurrent)
       case CommandEnum.Forecast.value => (1, jsonToForecast)
@@ -216,47 +216,50 @@ object Service:
       case CommandEnum.Football.value => (2, jsonToFootball) // TODO change
       case _ => throw new IllegalStateException("Wrong command for searching in sheet!")
 
-  def visualizeSheet(sheet: List[List[String]], converter: List[String] => List[(String, List[Object])]): Unit =
+  def visualizeSheet(sheet: List[List[String]], converter: List[String] => List[List[Object]]): Unit =
     if sheet.isEmpty
     then println("There is no history for this command!")
     else
-      val args = converter(sheet(0))
-      val entityList: List[List[Object]] =
-        sheet.map(converter(_).map(_._2)).foldLeft(Nil)((l1: List[List[Object]], l2: List[Object]) => l1 :+ l2)
-        // todo fix
-      Table.plotTable(
-        args.map(_._1) :: entityList
-      )
+      val arg: List[List[Object]] = converter(sheet(0))
+      Table.plotTable(arg ++ sheet.tail.map(converter).flatMap(_.tail))
 
-  def visualizeRow(row: List[String], converter: List[String] => List[(String, List[Object])]): Unit =
+  def visualizeRow(row: List[String], converter: List[String] => List[List[Object]]): Unit =
     val args = converter(row)
-    Table.plotTable(args.map(_._1) +: args.map(_._2))
+    Table.plotTable( /*args.map(_._1) +: args.map(_._2)*/ args)
 
-  def jsonToCurrent(row: List[String]): List[(String, List[Object])] =
-    new JsonParsedCurrent(row(2), Map[String, Seq[String]]()).parsedValue.myArgs.map(t => (t._1, List(t._2)))
-  def jsonToAstronomy(row: List[String]): List[(String, List[Object])] =
-    new JsonParsedAstronomy(row(2), Map[String, Seq[String]]()).parsedValue.myArgs.map(t => (t._1, List(t._2)))
-  def jsonToFootball(row: List[String]): List[(String, List[Object])] =
+  def jsonToCurrent(row: List[String]): List[List[Object]] =
+    val argsList: List[(String, Object)] =
+      new JsonParsedCurrent(row(2), Map[String, Seq[String]]()).parsedValue.myArgs
+    if argsList.isEmpty
+    then throw new NoSuchElementException("There are no matches!")
+    else List(argsList.map(_._1), argsList.map(_._2))
+
+  def jsonToAstronomy(row: List[String]): List[List[Object]] =
+    val argsList: List[(String, Object)] =
+      new JsonParsedAstronomy(row(2), Map[String, Seq[String]]()).parsedValue.myArgs
+    if argsList.isEmpty
+    then throw new NoSuchElementException("There are no matches!")
+    else List(argsList.map(_._1), argsList.map(_._2))
+
+  def jsonToFootball(row: List[String]): List[List[Object]] =
     val argsList: List[List[(String, Object)]] =
       new JsonParsedFootball(row(2), Map[String, Seq[String]]()).parsedValue.map(_.myArgs)
     if argsList.isEmpty
     then throw new NoSuchElementException("There are no matches!")
-    else
-      argsList(0)
-        .map(_._1)
-        .zip(
-          argsList.map(_.map(_._2))
-        )
-  def jsonToForecast(row: List[String]): List[(String, List[Object])] =
+    else argsList(0).map(_._1) +: argsList.map(_.map(_._2))
+
+  def jsonToForecast(row: List[String]): List[List[Object]] =
     val argsList: List[List[(String, Object)]] =
       new JsonParsedFootball(row(2), Map[String, Seq[String]]()).parsedValue.map(_.myArgs)
     if argsList.isEmpty
     then throw new NoSuchElementException("There are no days in the forecast!")
     else
-      argsList(0)
-        .map(_._1)
-        .zip(
-          argsList.map(_.map(_._2))
-        )
-  def jsonToTimeZone(row: List[String]): List[(String, List[Object])] =
-    new JsonParsedTimeZone(row(2), Map[String, Seq[String]]()).parsedValue.myArgs.map(t => (t._1, List(t._2)))
+      println(argsList(0).map(_._1))
+      argsList(0).map(_._1) +: argsList.map(_.map(_._2))
+
+  def jsonToTimeZone(row: List[String]): List[List[Object]] =
+    val argsList: List[(String, Object)] =
+      new JsonParsedTimeZone(row(2), Map[String, Seq[String]]()).parsedValue.myArgs
+    if argsList.isEmpty
+    then throw new NoSuchElementException("There are no matches!")
+    else List(argsList.map(_._1), argsList.map(_._2))
