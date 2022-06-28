@@ -1,7 +1,7 @@
 import Service.findsSheetByCommand
 import Utils.mkRegex
 import org.apache.poi.ss.usermodel.{Cell, CellType}
-import org.apache.poi.xssf.usermodel.{XSSFSheet, XSSFWorkbook}
+import org.apache.poi.xssf.usermodel.{XSSFRow, XSSFSheet, XSSFWorkbook}
 import requests.Response
 
 import java.io.{File, FileInputStream, FileOutputStream}
@@ -149,14 +149,10 @@ object Service:
         List
           .range(1, myWorkbook.getSheetAt(n).getLastRowNum + 1)
           .foreach(rowNumber =>
-            println(myWorkbook.getSheetAt(n).getRow(rowNumber).getLastCellNum)
-            val lastCellNumber: Int = myWorkbook.getSheetAt(n).getRow(rowNumber).getLastCellNum
-            List
-              .range(0, lastCellNumber)
-              .foreach(columnNumber =>
-                val cell: Cell = myWorkbook.getSheetAt(n).getRow(rowNumber).getCell(columnNumber)
-                cell.setCellType(CellType.BLANK)
-              )
+            val currentSheet: XSSFSheet = myWorkbook.getSheetAt(n)
+            val lastCellNumber: Int = currentSheet.getRow(rowNumber).getLastCellNum
+            val removingRow: XSSFRow = currentSheet.getRow(rowNumber)
+            currentSheet.removeRow(removingRow)
           )
       )
     val fileOut: FileOutputStream = new FileOutputStream("test.xlsx")
@@ -171,15 +167,15 @@ object Service:
     if (args.filter(CommandEnum.isCommand(_)).size != 0) && !acceptsTwoCommands then
       Future { throw new IllegalStateException("You can enter only one command per time!") }
     else executioner(args)
-
-  def readAllSheets(): List[List[List[String]]] =
-    val myFile = new File("test.xlsx")
-
-    val fis = new FileInputStream(myFile)
-
-    val myWorkbook = new XSSFWorkbook(fis)
-
-    List.range(1, 3).map(readSheet(_, myWorkbook)) // TODO change sheets count
+//
+//  def readAllSheets(): List[List[List[String]]] =
+//    val myFile = new File("test.xlsx")
+//
+//    val fis = new FileInputStream(myFile)
+//
+//    val myWorkbook = new XSSFWorkbook(fis)
+//
+//    List.range(1, 3).map(readSheet(_, myWorkbook)) // TODO change sheets count
 
   def readSheet(sheetNumber: Int, workbook: XSSFWorkbook): List[List[String]] =
     val mySheet = workbook.getSheetAt(sheetNumber)
