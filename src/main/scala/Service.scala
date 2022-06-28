@@ -1,9 +1,10 @@
 import Service.findsSheetByCommand
 import Utils.mkRegex
+import org.apache.poi.ss.usermodel.{Cell, CellType}
 import org.apache.poi.xssf.usermodel.{XSSFSheet, XSSFWorkbook}
 import requests.Response
 
-import java.io.{File, FileInputStream}
+import java.io.{File, FileInputStream, FileOutputStream}
 import scala.::
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContextExecutor, Future}
@@ -140,15 +141,26 @@ object Service:
     val myFile = new File("test.xlsx")
     val fis = new FileInputStream(myFile)
     val myWorkbook = new XSSFWorkbook(fis)
+
     List
       .range(0, 2)
+      .filter(myWorkbook.getSheetAt(_).getLastRowNum >= 1)
       .foreach(n =>
         List
           .range(1, myWorkbook.getSheetAt(n).getLastRowNum + 1)
-          .foreach(x =>
-            myWorkbook.getSheetAt(n).removeRow(myWorkbook.getSheetAt(n).getRow(x))
-          ) // TODO fix - cannot delete sheet
+          .foreach(rowNumber =>
+            println(myWorkbook.getSheetAt(n).getRow(rowNumber).getLastCellNum)
+            val lastCellNumber: Int = myWorkbook.getSheetAt(n).getRow(rowNumber).getLastCellNum
+            List
+              .range(0, lastCellNumber)
+              .foreach(columnNumber =>
+                val cell: Cell = myWorkbook.getSheetAt(n).getRow(rowNumber).getCell(columnNumber)
+                cell.setCellType(CellType.BLANK)
+              )
+          )
       )
+    val fileOut: FileOutputStream = new FileOutputStream("test.xlsx")
+    myWorkbook.write(fileOut)
     println("History was successfully deleted!")
 
   def checkArgs(
