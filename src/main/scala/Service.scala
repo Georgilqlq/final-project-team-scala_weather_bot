@@ -33,6 +33,7 @@ object Service:
       ResponseHandler
         .createParsedCurrent(CommandEnum.Current.value.toLowerCase, commandArguments)
         .map(value =>
+          value.writeDataInTable()
           val args = value.parsedValue.myArgs
           Table.plotTable(List(args.map(_._1), args.map(_._2)))
         )
@@ -46,6 +47,7 @@ object Service:
       ResponseHandler
         .createParsedForecast(CommandEnum.Forecast.value.toLowerCase, commandArguments)
         .map(value =>
+          value.writeDataInTable()
           if value.parsedValue.isEmpty then println("There is no forecast.")
           else
             val args = value.parsedValue(0).myArgs
@@ -61,6 +63,7 @@ object Service:
       ResponseHandler
         .createParsedAstronomy(CommandEnum.Astronomy.value.toLowerCase, commandArguments)
         .map(value =>
+          value.writeDataInTable()
           val args = value.parsedValue.myArgs
           Table.plotTable(List(args.map(_._1), args.map(_._2)))
         )
@@ -74,6 +77,7 @@ object Service:
       ResponseHandler
         .createParsedTimeZone(CommandEnum.Timezone.value.toLowerCase, commandArguments)
         .map(value =>
+          value.writeDataInTable()
           val args = value.parsedValue.myArgs
           Table.plotTable(List(args.map(_._1), args.map(_._2)))
         )
@@ -89,6 +93,7 @@ object Service:
         .map(value =>
           if value.parsedValue.isEmpty then println("There are no matches.")
           else
+            value.writeDataInTable()
             val args = value.parsedValue(0).myArgs
             Table.plotTable(args.map(_._1) :: value.parsedValue.map(_.myArgs.map(_._2)))
         )
