@@ -10,6 +10,6 @@ class JsonParsedTimeZone(override val rawValue: String,
   val parsedValue: Location =
     implicit lazy val formats: Formats = DefaultFormats
 
-    val json = parse(rawValue)
+    val json = parse(rawValue) \ "location"
     json.extract[Location]
   val command: String = "timezone"
