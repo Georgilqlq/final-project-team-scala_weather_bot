@@ -123,9 +123,8 @@ object Service:
     then Future.failed(new IllegalStateException("Command cannot contains special symbols and digits."))
     else
       try
-        val tuple: (Int, List[String] => List[List[Object]]) = findsSheetByCommand(commandArguments(0))
+        val tuple: (String, List[String] => List[List[Object]]) = findsSheetByCommand(commandArguments(0))
         val sheet = readSheet(tuple._1)
-        println()
         Future.successful(visualizeSheet(sheet, tuple._2))
       catch
         case e: Exception =>
@@ -138,7 +137,7 @@ object Service:
     then Future.failed(new IllegalStateException("Command cannot contains special symbols and digits."))
     else
       try
-        val tuple: (Int, List[String] => List[List[Object]]) = findsSheetByCommand(commandArguments(0))
+        val tuple: (String, List[String] => List[List[Object]]) = findsSheetByCommand(commandArguments(0))
         val row = readRow(commandArguments(1).toInt, tuple._1)
         Future.successful(visualizeRow(row, tuple._2))
       catch
@@ -148,24 +147,25 @@ object Service:
   def delete(commandArguments: List[String]): Future[Unit] = Future.successful(deleteAllSheets)
 
   def deleteAllSheets: Unit =
-    val myFile = new File("test.xlsx")
+    val myFile = new File(Utils.FILE_NAME)
     val fis = new FileInputStream(myFile)
     val myWorkbook = new XSSFWorkbook(fis)
 
-    List
-      .range(0, 2)
-      .filter(myWorkbook.getSheetAt(_).getLastRowNum >= 1)
-      .foreach(n =>
+    List(CommandEnum.Current, CommandEnum.Forecast, CommandEnum.Astronomy, CommandEnum.Timezone, CommandEnum.Football)
+      .map(_.value.toLowerCase)
+      .filter(myWorkbook.getSheet(_) != null)
+      .filter(myWorkbook.getSheet(_).getLastRowNum >= 1)
+      .foreach(name =>
         List
-          .range(1, myWorkbook.getSheetAt(n).getLastRowNum + 1)
+          .range(1, myWorkbook.getSheet(name).getLastRowNum + 1)
           .foreach(rowNumber =>
-            val currentSheet: XSSFSheet = myWorkbook.getSheetAt(n)
+            val currentSheet: XSSFSheet = myWorkbook.getSheet(name)
             val lastCellNumber: Int = currentSheet.getRow(rowNumber).getLastCellNum
             val removingRow: XSSFRow = currentSheet.getRow(rowNumber)
             currentSheet.removeRow(removingRow)
           )
       )
-    val fileOut: FileOutputStream = new FileOutputStream("test.xlsx")
+    val fileOut: FileOutputStream = new FileOutputStream(Utils.FILE_NAME)
     myWorkbook.write(fileOut)
     println("History was successfully deleted!")
 
@@ -177,25 +177,17 @@ object Service:
     if (args.filter(CommandEnum.isCommand(_)).size != 0) && !acceptsTwoCommands then
       Future { throw new IllegalStateException("You can enter only one command per time!") }
     else executioner(args)
-//
-//  def readAllSheets(): List[List[List[String]]] =
-//    val myFile = new File("test.xlsx")
-//
-//    val fis = new FileInputStream(myFile)
-//
-//    val myWorkbook = new XSSFWorkbook(fis)
-//
-//    List.range(1, 3).map(readSheet(_, myWorkbook)) // TODO change sheets count
 
-  def readSheet(sheetNumber: Int, workbook: XSSFWorkbook): List[List[String]] =
-    val mySheet = workbook.getSheetAt(sheetNumber)
-    List.range(1, mySheet.getLastRowNum + 1).map(readRow(_, mySheet))
+  def readSheet(sheetName: String, workbook: XSSFWorkbook): List[List[String]] =
+    val mySheet = workbook.getSheet(sheetName)
+    if mySheet == null then throw new NoSuchElementException("There is no history for this command.")
+    else List.range(1, mySheet.getLastRowNum + 1).map(readRow(_, mySheet))
 
-  def readSheet(sheetNumber: Int): List[List[String]] =
-    val myFile = new File("test.xlsx")
+  def readSheet(sheetName: String): List[List[String]] =
+    val myFile = new File(Utils.FILE_NAME)
     val fis = new FileInputStream(myFile)
     val myWorkbook = new XSSFWorkbook(fis)
-    readSheet(sheetNumber, myWorkbook)
+    readSheet(sheetName, myWorkbook)
 
   def readRow(rowNumber: Int, sheet: XSSFSheet): List[String] =
     if sheet.getLastRowNum == -1
@@ -214,24 +206,24 @@ object Service:
         row.getCell(3).getStringCellValue
       )
 
-  def readRow(rowNumber: Int, shееtNumber: Int): List[String] =
-    val myFile = new File("test.xlsx")
+  def readRow(rowNumber: Int, shееtName: String): List[String] =
+    val myFile = new File(Utils.FILE_NAME)
 
     val fis = new FileInputStream(myFile)
 
     val myWorkbook = new XSSFWorkbook(fis)
 
-    val mySheet = myWorkbook.getSheetAt(shееtNumber)
+    val mySheet = myWorkbook.getSheet(shееtName)
+    if mySheet == null then throw new NoSuchElementException("There is no history for this command.")
+    else readRow(rowNumber, mySheet)
 
-    readRow(rowNumber, mySheet)
-
-  def findsSheetByCommand(command: String): (Int, List[String] => List[List[Object]]) =
+  def findsSheetByCommand(command: String): (String, List[String] => List[List[Object]]) =
     command match
-      case CommandEnum.Current.value => (0, jsonToCurrent)
-      case CommandEnum.Forecast.value => (1, jsonToForecast)
-      case CommandEnum.Astronomy.value => (2, jsonToAstronomy)
-      case CommandEnum.Timezone.value => (3, jsonToTimeZone)
-      case CommandEnum.Football.value => (2, jsonToFootball) // TODO change
+      case CommandEnum.Current.value => (CommandEnum.Current.value.toLowerCase, jsonToCurrent)
+      case CommandEnum.Forecast.value => (CommandEnum.Forecast.value.toLowerCase, jsonToForecast)
+      case CommandEnum.Astronomy.value => (CommandEnum.Astronomy.value.toLowerCase, jsonToAstronomy)
+      case CommandEnum.Timezone.value => (CommandEnum.Timezone.value.toLowerCase, jsonToTimeZone)
+      case CommandEnum.Football.value => (CommandEnum.Football.value.toLowerCase, jsonToFootball) // TODO change
       case _ => throw new IllegalStateException("Wrong command for searching in sheet!")
 
   def visualizeSheet(sheet: List[List[String]], converter: List[String] => List[List[Object]]): Unit =
@@ -268,7 +260,7 @@ object Service:
 
   def jsonToForecast(row: List[String]): List[List[Object]] =
     val argsList: List[List[(String, Object)]] =
-      new JsonParsedFootball(row(2), Map[String, Seq[String]]()).parsedValue.map(_.myArgs)
+      new JsonParsedForecast(row(2), Map[String, Seq[String]]()).parsedValue.map(_.myArgs)
     if argsList.isEmpty
     then throw new NoSuchElementException("There are no days in the forecast!")
     else

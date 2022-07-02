@@ -9,7 +9,7 @@ object ApiRequest:
   def makeApiRequest(command: String, commandArguments: List[String]): Response =
     requests.get(
       createUrlString(command),
-      params = createRequestParameters(command, Properties.envOrElse("API_KEY", "") +: commandArguments),
+      params = createRequestParameters(command, Utils.API_KEY +: commandArguments),
       check = false
     )
 
