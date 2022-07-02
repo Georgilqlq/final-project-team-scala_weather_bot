@@ -7,20 +7,7 @@ scalacOptions ++= Seq(
   "-new-syntax",
   "-indent"
 )
-//
-//libraryDependencies ++= Seq(
-//  // Enables logging if required by some library
-//  // You can use it via https://github.com/lightbend/scala-logging
-//  "ch.qos.logback" % "logback-classic" % "1.2.11",
-//  "org.scalatest" %% "scalatest" % "3.2.11" % Test
-//)
-//
-//assembly / assemblyMergeStrategy := {
-//  case PathList("META-INF", xs @ _*) => MergeStrategy.discard
-//  case x =>
-//    val oldStrategy = (assembly / assemblyMergeStrategy).value
-//    oldStrategy(x)
-//}
+
 
 lazy val ello = (project in file("."))
   .settings(
@@ -38,7 +25,11 @@ libraryDependencies ++= Seq(
   //  "com.crealytics" %% "spark-excel" % "0.13.0",
   "org.apache.poi" % "poi" % "5.2.2",
   "org.apache.poi" % "poi-ooxml" % "5.2.2",
-  "org.apache.poi" % "poi-ooxml-lite" % "5.2.2"
+  "org.apache.poi" % "poi-ooxml-lite" % "5.2.2",
+//  "org.apache.logging.log4j" %% "log4j-api-scala" % "12.1",
+  "org.apache.logging.log4j" % "log4j-api" % "2.17.2",
+  "org.apache.logging.log4j" % "log4j-core" % "2.17.2" % Runtime,
+  "org.apache.logging.log4j" %% "log4j-api-scala" % "11.0"
 )
 
 lazy val hello = (project in file("."))

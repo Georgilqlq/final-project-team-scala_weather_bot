@@ -4,6 +4,7 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook
 import org.apache.poi.ss.usermodel.Cell
 import requests.RequestFailedException
 
+import java.io.FileNotFoundException
 import java.util.regex.Pattern
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -103,6 +104,8 @@ object Console:
         Future.successful(println("There was an error with the request!" + e.getMessage))
       case e: NoSuchElementException =>
         Future.successful(println("The requested element was not found!" + e.getMessage))
+      case e: FileNotFoundException =>
+        Future.successful(println("There was an error with the logging file!" + e.getMessage))
       case e: Exception =>
         Future.successful(
           println(
