@@ -1,5 +1,12 @@
 import Service.findsSheetByCommand
-import Utils.mkRegex
+import Utils.{
+  CITY_CONSTRAINTS_MESSAGE,
+  CITY_IS_MANDATORY_MESSAGE,
+  HELP_INSTRUCTIONS,
+  NO_HISTORY_MESSAGE,
+  mkRegex,
+  validateCity
+}
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.status.StatusLogger
 import org.apache.poi.ss.usermodel.{Cell, CellType}
@@ -18,103 +25,76 @@ object Service:
 
   StatusLogger.getLogger.setLevel(Level.OFF)
 
-  def help(args: List[String]): Future[Unit] = Future.successful(
-    Table.plotTable(
-      List(
-        List("command", "description"),
-        List("help", "This command prints out this information."),
-        List("exit", "This command stops the programme."),
-        List("current <city>", "This command shows detailed information about the weather in the chosen city(<city>)."),
-        List(
-          "forecast <city>",
-          "This command shows the forecast for the next day for the chosen city(<city). It also plots the temperature."
-        ),
-        List(
-          "astronomy <city> <date>",
-          "This command shows astronomy details about the chosen city(<city>) on the chosen date(<date>). If date is not entered, the date is today by default."
-        ),
-        List("timezone <city>", "This command prints out information about the timezone of the chosen city(<city>)."),
-        List("football <city>", "This command prints out information about the football matches for the day."),
-        List("read-sheet <command>", "This command prints out history about all invocations of this command."),
-        List("read-row <command> <number>", "This command prints out information about specific command by id."),
-        List("delete", "This deletes the history of the used commands.")
-      )
-    )
-  )
+  def help(args: List[String]): Future[Unit] = Future.successful(Table.plotTable(HELP_INSTRUCTIONS))
 
   def current(commandArguments: List[String]): Future[Unit] =
-    if commandArguments.isEmpty
-    then Future.failed(new IllegalStateException("City is a mandatory field."))
-    else if !commandArguments(0).matches("[A-Z]+")
-    then Future.failed(new IllegalStateException("City cannot contains special symbols and digits."))
-    else
-      ResponseHandler
-        .createParsedCurrent(CommandEnum.Current.value.toLowerCase, commandArguments)
-        .map(value =>
-          value.writeDataInTable()
-          val args = value.parsedValue.myArgs
-          Table.plotTable(List(args.map(_._1), args.map(_._2)))
-        )
+    validateCity(
+      commandArguments,
+      myArguments =>
+        ResponseHandler
+          .createParsedCurrent(CommandEnum.Current.value.toLowerCase, myArguments)
+          .map(value =>
+            value.writeDataInTable()
+            val args = value.parsedValue.myArgs
+            Table.plotTable(List(args.map(_._1), args.map(_._2)))
+          )
+    )
 
   def forecast(commandArguments: List[String]): Future[Unit] =
-    if commandArguments.isEmpty
-    then Future.failed(new IllegalStateException("City is a mandatory field."))
-    else if !commandArguments(0).matches("[A-Z]+")
-    then Future.failed(new IllegalStateException("City cannot contains special symbols and digits."))
-    else
-      ResponseHandler
-        .createParsedForecast(CommandEnum.Forecast.value.toLowerCase, commandArguments)
-        .map(value =>
-          value.writeDataInTable()
-          if value.parsedValue.isEmpty then println("There is no forecast.")
-          else
-            val args = value.parsedValue(0).myArgs
-            Table.plotTable(args.map(_._1) :: value.parsedValue.map(_.myArgs.map(_._2)))
-        )
+    validateCity(
+      commandArguments,
+      myArguments =>
+        ResponseHandler
+          .createParsedForecast(CommandEnum.Forecast.value.toLowerCase, myArguments)
+          .map(value =>
+            value.writeDataInTable()
+            if value.parsedValue.isEmpty then println("There is no forecast.")
+            else
+              val args = value.parsedValue(0).myArgs
+              Table.plotTable(args.map(_._1) :: value.parsedValue.map(_.myArgs.map(_._2)))
+          )
+    )
 
   def astronomy(commandArguments: List[String]): Future[Unit] =
-    if commandArguments.isEmpty
-    then Future.failed(new IllegalStateException("City is a mandatory field."))
-    else if !commandArguments(0).matches("[A-Z]+")
-    then Future.failed(new IllegalStateException("City cannot contains special symbols and digits."))
-    else
-      ResponseHandler
-        .createParsedAstronomy(CommandEnum.Astronomy.value.toLowerCase, commandArguments)
-        .map(value =>
-          value.writeDataInTable()
-          val args = value.parsedValue.myArgs
-          Table.plotTable(List(args.map(_._1), args.map(_._2)))
-        )
+    validateCity(
+      commandArguments,
+      myArguments =>
+        ResponseHandler
+          .createParsedAstronomy(CommandEnum.Astronomy.value.toLowerCase, myArguments)
+          .map(value =>
+            value.writeDataInTable()
+            val args = value.parsedValue.myArgs
+            Table.plotTable(List(args.map(_._1), args.map(_._2)))
+          )
+    )
 
   def timezone(commandArguments: List[String]): Future[Unit] =
-    if commandArguments.isEmpty
-    then Future.failed(new IllegalStateException("City is a mandatory field."))
-    else if !commandArguments(0).matches("[A-Z]+")
-    then Future.failed(new IllegalStateException("City cannot contains special symbols and digits."))
-    else
-      ResponseHandler
-        .createParsedTimeZone(CommandEnum.Timezone.value.toLowerCase, commandArguments)
-        .map(value =>
-          value.writeDataInTable()
-          val args = value.parsedValue.myArgs
-          Table.plotTable(List(args.map(_._1), args.map(_._2)))
-        )
+    validateCity(
+      commandArguments,
+      myArguments =>
+        ResponseHandler
+          .createParsedTimeZone(CommandEnum.Timezone.value.toLowerCase, myArguments)
+          .map(value =>
+            value.writeDataInTable()
+            val args = value.parsedValue.myArgs
+            Table.plotTable(List(args.map(_._1), args.map(_._2)))
+          )
+    )
 
   def football(commandArguments: List[String]): Future[Unit] =
-    if commandArguments.isEmpty
-    then Future.failed(new IllegalStateException("City is a mandatory field."))
-    else if !commandArguments(0).matches("[A-Z]+")
-    then Future.failed(new IllegalStateException("City cannot contains special symbols and digits."))
-    else
-      ResponseHandler
-        .createParsedFootball(CommandEnum.Football.value.toLowerCase, commandArguments)
-        .map(value =>
-          if value.parsedValue.isEmpty then println("There are no matches.")
-          else
-            value.writeDataInTable()
-            val args = value.parsedValue(0).myArgs
-            Table.plotTable(args.map(_._1) :: value.parsedValue.map(_.myArgs.map(_._2)))
-        )
+    validateCity(
+      commandArguments,
+      myArguments =>
+        ResponseHandler
+          .createParsedFootball(CommandEnum.Football.value.toLowerCase, myArguments)
+          .map(value =>
+            if value.parsedValue.isEmpty then println("There are no matches.")
+            else
+              value.writeDataInTable()
+              val args = value.parsedValue(0).myArgs
+              Table.plotTable(args.map(_._1) :: value.parsedValue.map(_.myArgs.map(_._2)))
+          )
+    )
 
   def printSheet(commandArguments: List[String]): Future[Unit] =
     if commandArguments.isEmpty
@@ -180,7 +160,7 @@ object Service:
 
   def readSheet(sheetName: String, workbook: XSSFWorkbook): List[List[String]] =
     val mySheet = workbook.getSheet(sheetName)
-    if mySheet == null then throw new NoSuchElementException("There is no history for this command.")
+    if mySheet == null then throw new NoSuchElementException(NO_HISTORY_MESSAGE)
     else List.range(1, mySheet.getLastRowNum + 1).map(readRow(_, mySheet))
 
   def readSheet(sheetName: String): List[List[String]] =
@@ -191,7 +171,7 @@ object Service:
 
   def readRow(rowNumber: Int, sheet: XSSFSheet): List[String] =
     if sheet.getLastRowNum == -1
-    then throw new NoSuchElementException("There is no history for this command!")
+    then throw new NoSuchElementException(NO_HISTORY_MESSAGE)
     else if sheet.getLastRowNum < rowNumber || rowNumber < 1
     then
       throw new IllegalStateException(
@@ -214,7 +194,7 @@ object Service:
     val myWorkbook = new XSSFWorkbook(fis)
 
     val mySheet = myWorkbook.getSheet(shееtName)
-    if mySheet == null then throw new NoSuchElementException("There is no history for this command.")
+    if mySheet == null then throw new NoSuchElementException(NO_HISTORY_MESSAGE)
     else readRow(rowNumber, mySheet)
 
   def findsSheetByCommand(command: String): (String, List[String] => List[List[Object]]) =
@@ -223,44 +203,44 @@ object Service:
       case CommandEnum.Forecast.value => (CommandEnum.Forecast.value.toLowerCase, jsonToForecast)
       case CommandEnum.Astronomy.value => (CommandEnum.Astronomy.value.toLowerCase, jsonToAstronomy)
       case CommandEnum.Timezone.value => (CommandEnum.Timezone.value.toLowerCase, jsonToTimeZone)
-      case CommandEnum.Football.value => (CommandEnum.Football.value.toLowerCase, jsonToFootball) // TODO change
+      case CommandEnum.Football.value => (CommandEnum.Football.value.toLowerCase, jsonToFootball)
       case _ => throw new IllegalStateException("Wrong command for searching in sheet!")
 
   def visualizeSheet(sheet: List[List[String]], converter: List[String] => List[List[Object]]): Unit =
     if sheet.isEmpty
-    then println("There is no history for this command!")
+    then println(NO_HISTORY_MESSAGE)
     else
       val arg: List[List[Object]] = converter(sheet(0))
       Table.plotTable(arg ++ sheet.tail.map(converter).flatMap(_.tail))
 
   def visualizeRow(row: List[String], converter: List[String] => List[List[Object]]): Unit =
     val args = converter(row)
-    Table.plotTable( /*args.map(_._1) +: args.map(_._2)*/ args)
+    Table.plotTable(args)
 
   def jsonToCurrent(row: List[String]): List[List[Object]] =
     val argsList: List[(String, Object)] =
-      new JsonParsedCurrent(row(2), Map[String, Seq[String]]()).parsedValue.myArgs
+      ("id", row(0)) +: new JsonParsedCurrent(row(2), Map[String, Seq[String]]()).parsedValue.myArgs
     if argsList.isEmpty
-    then throw new NoSuchElementException("There are no matches!")
+    then throw new NoSuchElementException("There are no current weather results!")
     else List(argsList.map(_._1), argsList.map(_._2))
 
   def jsonToAstronomy(row: List[String]): List[List[Object]] =
     val argsList: List[(String, Object)] =
-      new JsonParsedAstronomy(row(2), Map[String, Seq[String]]()).parsedValue.myArgs
+      ("id", row(0)) +: new JsonParsedAstronomy(row(2), Map[String, Seq[String]]()).parsedValue.myArgs
     if argsList.isEmpty
-    then throw new NoSuchElementException("There are no matches!")
+    then throw new NoSuchElementException("There are no astronomy results!")
     else List(argsList.map(_._1), argsList.map(_._2))
 
   def jsonToFootball(row: List[String]): List[List[Object]] =
     val argsList: List[List[(String, Object)]] =
-      new JsonParsedFootball(row(2), Map[String, Seq[String]]()).parsedValue.map(_.myArgs)
+      new JsonParsedFootball(row(2), Map[String, Seq[String]]()).parsedValue.map(("id", row(0)) +: _.myArgs)
     if argsList.isEmpty
     then throw new NoSuchElementException("There are no matches!")
     else argsList(0).map(_._1) +: argsList.map(_.map(_._2))
 
   def jsonToForecast(row: List[String]): List[List[Object]] =
     val argsList: List[List[(String, Object)]] =
-      new JsonParsedForecast(row(2), Map[String, Seq[String]]()).parsedValue.map(_.myArgs)
+      new JsonParsedForecast(row(2), Map[String, Seq[String]]()).parsedValue.map(("id", row(0)) +: _.myArgs)
     if argsList.isEmpty
     then throw new NoSuchElementException("There are no days in the forecast!")
     else
@@ -269,7 +249,7 @@ object Service:
 
   def jsonToTimeZone(row: List[String]): List[List[Object]] =
     val argsList: List[(String, Object)] =
-      new JsonParsedTimeZone(row(2), Map[String, Seq[String]]()).parsedValue.myArgs
+      ("id", row(0)) +: new JsonParsedTimeZone(row(2), Map[String, Seq[String]]()).parsedValue.myArgs
     if argsList.isEmpty
-    then throw new NoSuchElementException("There are no matches!")
+    then throw new NoSuchElementException("There are no timezone results!")
     else List(argsList.map(_._1), argsList.map(_._2))
