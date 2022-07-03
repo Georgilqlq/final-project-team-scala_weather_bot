@@ -18,9 +18,8 @@ import java.io.{File, FileInputStream}
 
 object Console:
   def main(args: Array[String]): Unit =
-    print("$ ")
-
-    while continue(readLine().toUpperCase()) do print("$ ")
+    println("Please enter 'help' in order to see detailed information about the supported operations.")
+    while continue(readLine().toUpperCase()) do println("")
 
   def continue(commandLine: String): Boolean =
     val helpR: Regex = mkRegex(CommandEnum.Help.value)
