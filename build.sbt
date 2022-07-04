@@ -26,10 +26,12 @@ libraryDependencies ++= Seq(
   "org.apache.poi" % "poi" % "5.2.2",
   "org.apache.poi" % "poi-ooxml" % "5.2.2",
   "org.apache.poi" % "poi-ooxml-lite" % "5.2.2",
-//  "org.apache.logging.log4j" %% "log4j-api-scala" % "12.1",
+  //  "org.apache.logging.log4j" %% "log4j-api-scala" % "12.1",
   "org.apache.logging.log4j" % "log4j-api" % "2.17.2",
   "org.apache.logging.log4j" % "log4j-core" % "2.17.2" % Runtime,
-  "org.apache.logging.log4j" %% "log4j-api-scala" % "11.0"
+  //  "org.apache.logging.log4j" %% "log4j-api-scala" % "11.0",
+  "org.scalatest" %% "scalatest" % "3.2.12" % Test,
+  "org.scalatestplus" %% "mockito-3-4" % "3.2.10.0" % Test
 )
 
 lazy val hello = (project in file("."))
