@@ -8,7 +8,6 @@ scalacOptions ++= Seq(
   "-indent"
 )
 
-
 lazy val ello = (project in file("."))
   .settings(
     name := "Hello",
@@ -31,7 +30,8 @@ libraryDependencies ++= Seq(
   "org.apache.logging.log4j" % "log4j-core" % "2.17.2" % Runtime,
   //  "org.apache.logging.log4j" %% "log4j-api-scala" % "11.0",
   "org.scalatest" %% "scalatest" % "3.2.12" % Test,
-  "org.scalatestplus" %% "mockito-3-4" % "3.2.10.0" % Test
+  "org.scalatestplus" %% "mockito-3-4" % "3.2.10.0" % Test,
+  "org.springframework.scala" %% "spring-scala" % "1.0.0.RC1" % Test
 )
 
 lazy val hello = (project in file("."))

@@ -1,4 +1,3 @@
-import Service.{readRow, visualizeRow}
 import Utils.mkRegex
 import org.apache.poi.hssf.usermodel.HSSFWorkbook
 import org.apache.poi.ss.usermodel.Cell
@@ -15,11 +14,12 @@ import org.apache.poi.xssf.usermodel.XSSFTable
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 
 import java.io.{File, FileInputStream}
+import scala.beans.BeanProperty
 
-object Console:
-  def main(args: Array[String]): Unit =
-    println("Please enter 'help' in order to see detailed information about the supported operations.")
-    while continue(readLine().toUpperCase()) do println("")
+class Console(
+  @BeanProperty
+  val myService: Service
+):
 
   def continue(commandLine: String): Boolean =
     val helpR: Regex = mkRegex(CommandEnum.Help.value)
@@ -39,39 +39,39 @@ object Console:
         CommandEnum.Exit.continue
       }
       case readSheetR(_) => {
-        caller(commandLine, CommandEnum.READ_SHEET.value, Service.printSheet, true)
+        caller(commandLine, CommandEnum.READ_SHEET.value, myService.printSheet, true)
         CommandEnum.READ_SHEET.continue
       }
       case readRowR(_) => {
-        caller(commandLine, CommandEnum.READ_ROW.value, Service.printRow, true)
+        caller(commandLine, CommandEnum.READ_ROW.value, myService.printRow, true)
         CommandEnum.READ_ROW.continue
       }
       case helpR(_) => {
-        caller(commandLine, CommandEnum.Help.value, Service.help)
+        caller(commandLine, CommandEnum.Help.value, myService.help)
         CommandEnum.Help.continue
       }
       case currentR(_) => {
-        caller(commandLine, CommandEnum.Current.value, Service.current)
+        caller(commandLine, CommandEnum.Current.value, myService.current)
         CommandEnum.Current.continue
       }
       case forecastR(_) => {
-        caller(commandLine, CommandEnum.Forecast.value, Service.forecast)
+        caller(commandLine, CommandEnum.Forecast.value, myService.forecast)
         CommandEnum.Forecast.continue
       }
       case astronomyR(_) => {
-        caller(commandLine, CommandEnum.Astronomy.value, Service.astronomy)
+        caller(commandLine, CommandEnum.Astronomy.value, myService.astronomy)
         CommandEnum.Astronomy.continue
       }
       case timezoneR(_) => {
-        caller(commandLine, CommandEnum.Timezone.value, Service.timezone)
+        caller(commandLine, CommandEnum.Timezone.value, myService.timezone)
         CommandEnum.Timezone.continue
       }
       case footballR(_) => {
-        caller(commandLine, CommandEnum.Football.value, Service.football)
+        caller(commandLine, CommandEnum.Football.value, myService.football)
         CommandEnum.Football.continue
       }
       case deleteR(_) => {
-        caller(commandLine, CommandEnum.DELETE.value, Service.delete)
+        caller(commandLine, CommandEnum.DELETE.value, myService.delete)
         CommandEnum.DELETE.continue
       }
       case _ => {
@@ -83,7 +83,7 @@ object Console:
 
   def extractArguments(commandLine: String, command: String): List[String] =
     val index = (commandLine indexOf command) + command.size
-    val args = commandLine.substring(0, index - command.size) + commandLine.substring(index)
+    val args = commandLine.substring(index)
     args.split(' ').toList.filter(!_.isBlank)
 
   def caller(
@@ -92,7 +92,7 @@ object Console:
     executioner: List[String] => Future[Unit],
     acceptsTwoCommands: Boolean = false
   ): Future[Unit] =
-    Service.checkArgs(extractArguments(commandLine, command), executioner, acceptsTwoCommands).recoverWith {
+    myService.checkArgs(extractArguments(commandLine, command), executioner, acceptsTwoCommands).recoverWith {
       case e: IllegalStateException =>
         Future.successful(
           println(

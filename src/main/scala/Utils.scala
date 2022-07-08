@@ -13,7 +13,7 @@ object Utils:
     then Future.failed(new IllegalStateException(CITY_CONSTRAINTS_MESSAGE))
     else action(commandArguments)
 
-  val FILE_NAME: String = "file.xlsx"
+  val FILE_NAME: String = "file2.xlsx"
   val API_KEY: String = Properties.envOrElse("API_KEY", "")
   val NO_HISTORY_MESSAGE: String = "There is no history for this command!"
 

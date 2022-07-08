@@ -1,4 +1,3 @@
-import Service.findsSheetByCommand
 import Utils.{
   CITY_CONSTRAINTS_MESSAGE,
   CITY_IS_MANDATORY_MESSAGE,
@@ -21,7 +20,7 @@ import scala.language.postfixOps
 import scala.util.matching.Regex
 import scala.util.{Failure, Success}
 
-object Service:
+class Service:
 
   StatusLogger.getLogger.setLevel(Level.OFF)
 
