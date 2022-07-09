@@ -1,16 +1,14 @@
-import Utils.{
-  CITY_CONSTRAINTS_MESSAGE,
-  CITY_IS_MANDATORY_MESSAGE,
-  HELP_INSTRUCTIONS,
-  NO_HISTORY_MESSAGE,
-  mkRegex,
-  validateCity
-}
+package service
+
+import Utils.validateCity
+import api.ResponseHandler
+import enums.CommandEnum
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.status.StatusLogger
 import org.apache.poi.ss.usermodel.{Cell, CellType}
 import org.apache.poi.xssf.usermodel.{XSSFRow, XSSFSheet, XSSFWorkbook}
 import requests.Response
+import table.{Table, TableManager, TableVisualizer}
 
 import java.io.{File, FileInputStream, FileOutputStream}
 import scala.::
@@ -25,7 +23,9 @@ class Service(
   @BeanProperty
   val tableManager: TableManager,
   @BeanProperty
-  val tableVisualizer: TableVisualizer
+  val tableVisualizer: TableVisualizer,
+  @BeanProperty
+  val responseHandler: ResponseHandler
 ):
 
   StatusLogger.getLogger.setLevel(Level.OFF)
@@ -36,7 +36,7 @@ class Service(
     validateCity(
       commandArguments,
       myArguments =>
-        ResponseHandler
+        responseHandler
           .createParsedCurrent(CommandEnum.Current.value.toLowerCase, myArguments)
           .map(value =>
             value.writeDataInTable()
@@ -49,7 +49,7 @@ class Service(
     validateCity(
       commandArguments,
       myArguments =>
-        ResponseHandler
+        responseHandler
           .createParsedForecast(CommandEnum.Forecast.value.toLowerCase, myArguments)
           .map(value =>
             value.writeDataInTable()
@@ -64,7 +64,7 @@ class Service(
     validateCity(
       commandArguments,
       myArguments =>
-        ResponseHandler
+        responseHandler
           .createParsedAstronomy(CommandEnum.Astronomy.value.toLowerCase, myArguments)
           .map(value =>
             value.writeDataInTable()
@@ -77,7 +77,7 @@ class Service(
     validateCity(
       commandArguments,
       myArguments =>
-        ResponseHandler
+        responseHandler
           .createParsedTimeZone(CommandEnum.Timezone.value.toLowerCase, myArguments)
           .map(value =>
             value.writeDataInTable()
@@ -90,7 +90,7 @@ class Service(
     validateCity(
       commandArguments,
       myArguments =>
-        ResponseHandler
+        responseHandler
           .createParsedFootball(CommandEnum.Football.value.toLowerCase, myArguments)
           .map(value =>
             if value.parsedValue.isEmpty then println("There are no matches.")
@@ -134,7 +134,7 @@ class Service(
   def delete(commandArguments: List[String]): Future[Unit] = Future.successful(deleteAllSheets)
 
   def deleteAllSheets: Unit =
-    val myFile = new File(Utils.FILE_NAME)
+    val myFile = new File(Utils.FILE_PATH)
     val fis = new FileInputStream(myFile)
     val myWorkbook = new XSSFWorkbook(fis)
 
@@ -152,7 +152,7 @@ class Service(
             currentSheet.removeRow(removingRow)
           )
       )
-    val fileOut: FileOutputStream = new FileOutputStream(Utils.FILE_NAME)
+    val fileOut: FileOutputStream = new FileOutputStream(Utils.FILE_PATH)
     myWorkbook.write(fileOut)
     println("History was successfully deleted!")
 

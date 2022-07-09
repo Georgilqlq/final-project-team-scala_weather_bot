@@ -1,4 +1,7 @@
+package table
+
 import Utils.NO_HISTORY_MESSAGE
+import table.Table
 
 class TableVisualizer:
   def visualizeSheet(sheet: List[List[String]], converter: List[String] => List[List[Object]]): Unit =

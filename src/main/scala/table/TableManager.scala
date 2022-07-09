@@ -1,7 +1,11 @@
+package table
+
 import Utils.NO_HISTORY_MESSAGE
+import enums.CommandEnum
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.status.StatusLogger
 import org.apache.poi.xssf.usermodel.{XSSFSheet, XSSFWorkbook}
+import parsing.JsonToObjectParser
 
 import java.io.{File, FileInputStream}
 import scala.beans.BeanProperty
@@ -18,7 +22,7 @@ class TableManager(
     else List.range(1, mySheet.getLastRowNum + 1).map(readRow(_, mySheet))
 
   def readSheet(sheetName: String): List[List[String]] =
-    val myFile = new File(Utils.FILE_NAME)
+    val myFile = new File(Utils.FILE_PATH)
     val fis = new FileInputStream(myFile)
     val myWorkbook = new XSSFWorkbook(fis)
     readSheet(sheetName, myWorkbook)
@@ -41,7 +45,7 @@ class TableManager(
       )
 
   def readRow(rowNumber: Int, shееtName: String): List[String] =
-    val myFile = new File(Utils.FILE_NAME)
+    val myFile = new File(Utils.FILE_PATH)
 
     val fis = new FileInputStream(myFile)
 

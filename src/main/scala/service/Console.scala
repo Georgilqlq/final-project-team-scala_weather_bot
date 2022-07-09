@@ -1,20 +1,20 @@
+package service
+
 import Utils.mkRegex
+import enums.CommandEnum
 import org.apache.poi.hssf.usermodel.HSSFWorkbook
 import org.apache.poi.ss.usermodel.Cell
+import org.apache.poi.xssf.usermodel.{XSSFSheet, XSSFTable, XSSFWorkbook}
 import requests.RequestFailedException
+import service.Service
 
-import java.io.FileNotFoundException
+import java.io.{File, FileInputStream, FileNotFoundException}
 import java.util.regex.Pattern
+import scala.beans.BeanProperty
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.io.StdIn.readLine
 import scala.util.matching.Regex
-import org.apache.poi.xssf.usermodel.XSSFSheet
-import org.apache.poi.xssf.usermodel.XSSFTable
-import org.apache.poi.xssf.usermodel.XSSFWorkbook
-
-import java.io.{File, FileInputStream}
-import scala.beans.BeanProperty
 
 class Console(
   @BeanProperty

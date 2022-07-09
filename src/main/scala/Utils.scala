@@ -13,7 +13,8 @@ object Utils:
     then Future.failed(new IllegalStateException(CITY_CONSTRAINTS_MESSAGE))
     else action(commandArguments)
 
-  val FILE_NAME: String = "file2.xlsx"
+  val FILE_NAME: String = "table.xlsx"
+  val FILE_PATH: String = "src/main/resources/" + FILE_NAME
   val DATE_WIDTH: Int = 8000
   val JSON_WIDTH: Int = 12000
 

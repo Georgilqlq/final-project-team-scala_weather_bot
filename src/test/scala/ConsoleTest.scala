@@ -5,6 +5,7 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.mockito.MockitoSugar.mock
 import org.mockito.Mockito.{times, verify, when}
 import requests.{RequestFailedException, Response}
+import service.{Console, Service}
 
 import java.io.FileNotFoundException
 import scala.concurrent.Future

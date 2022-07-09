@@ -1,3 +1,7 @@
+package parsing
+
+import parsing.*
+
 class JsonToObjectParser:
 
   def jsonToCurrent(row: List[String]): List[List[Object]] =

@@ -1,10 +1,12 @@
-import org.apache.poi.xssf.usermodel.XSSFWorkbook
+package parsing
 
-import java.io.{FileInputStream, FileOutputStream}
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.status.StatusLogger
 import org.apache.poi.sl.usermodel.VerticalAlignment
 import org.apache.poi.ss.usermodel.HorizontalAlignment
+import org.apache.poi.xssf.usermodel.XSSFWorkbook
+
+import java.io.{FileInputStream, FileOutputStream}
 
 abstract class JsonParser[A]:
   val rawValue: String
@@ -14,7 +16,7 @@ abstract class JsonParser[A]:
 
   StatusLogger.getLogger.setLevel(Level.OFF)
 
-  def writeDataInTable(fileName: String = Utils.FILE_NAME): Unit =
+  def writeDataInTable(fileName: String = Utils.FILE_PATH): Unit =
     val inputStream = new FileInputStream(fileName)
     val workbook = new XSSFWorkbook(inputStream)
     val sheet =
