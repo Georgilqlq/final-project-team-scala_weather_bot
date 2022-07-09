@@ -1,10 +1,13 @@
-import org.apache.poi.xssf.usermodel.XSSFWorkbook
+package parsing
 
-import java.io.{FileInputStream, FileOutputStream}
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.status.StatusLogger
 import org.apache.poi.sl.usermodel.VerticalAlignment
 import org.apache.poi.ss.usermodel.HorizontalAlignment
+import org.apache.poi.xssf.usermodel.XSSFWorkbook
+import utils.Utils
+
+import java.io.{FileInputStream, FileOutputStream}
 
 abstract class JsonParser[A]:
   val rawValue: String
@@ -14,15 +17,15 @@ abstract class JsonParser[A]:
 
   StatusLogger.getLogger.setLevel(Level.OFF)
 
-  def writeDataInTable(): Unit =
-    val inputStream = new FileInputStream(Utils.FILE_NAME)
+  def writeDataInTable(fileName: String = Utils.FILE_PATH): Unit =
+    val inputStream = new FileInputStream(fileName)
     val workbook = new XSSFWorkbook(inputStream)
     val sheet =
       workbook.getSheet(command) match
         case null => workbook.createSheet(command)
         case existingSheet => existingSheet
-    sheet.setColumnWidth(1, 8000)
-    sheet.setColumnWidth(2, 12000)
+    sheet.setColumnWidth(1, Utils.DATE_WIDTH)
+    sheet.setColumnWidth(2, Utils.JSON_WIDTH)
 
     if sheet.getLastRowNum == -1 then
       val firstRow = sheet.createRow(0)
@@ -41,7 +44,7 @@ abstract class JsonParser[A]:
     val jsonCell: Unit = row.createCell(2).setCellValue(rawValue)
     val commandCell: Unit = row.createCell(3).setCellValue(command)
 
-    val fileOutput = new FileOutputStream(Utils.FILE_NAME)
+    val fileOutput = new FileOutputStream(fileName)
     workbook.write(fileOutput)
 
     fileOutput.flush()
