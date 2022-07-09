@@ -1,3 +1,5 @@
+package utils
+
 import scala.concurrent.Future
 import scala.util.Properties
 import scala.util.matching.Regex

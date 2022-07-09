@@ -1,11 +1,12 @@
 package table
 
-import Utils.NO_HISTORY_MESSAGE
+import utils.Utils.NO_HISTORY_MESSAGE
 import enums.CommandEnum
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.status.StatusLogger
 import org.apache.poi.xssf.usermodel.{XSSFSheet, XSSFWorkbook}
 import parsing.JsonToObjectParser
+import utils.Utils
 
 import java.io.{File, FileInputStream}
 import scala.beans.BeanProperty

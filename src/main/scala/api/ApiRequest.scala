@@ -1,6 +1,7 @@
 package api
 
 import requests.Response
+import utils.Utils
 
 object ApiRequest:
   val weather_api = "http://api.weatherapi.com/v1"

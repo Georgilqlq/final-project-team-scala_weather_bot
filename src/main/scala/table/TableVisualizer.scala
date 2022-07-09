@@ -1,6 +1,6 @@
 package table
 
-import Utils.NO_HISTORY_MESSAGE
+import utils.Utils.NO_HISTORY_MESSAGE
 import table.Table
 
 class TableVisualizer:

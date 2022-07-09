@@ -1,6 +1,6 @@
 package service
 
-import Utils.validateCity
+import utils.Utils.{HELP_INSTRUCTIONS, validateCity}
 import api.ResponseHandler
 import enums.CommandEnum
 import org.apache.logging.log4j.Level
@@ -9,6 +9,7 @@ import org.apache.poi.ss.usermodel.{Cell, CellType}
 import org.apache.poi.xssf.usermodel.{XSSFRow, XSSFSheet, XSSFWorkbook}
 import requests.Response
 import table.{Table, TableManager, TableVisualizer}
+import utils.Utils
 
 import java.io.{File, FileInputStream, FileOutputStream}
 import scala.::
