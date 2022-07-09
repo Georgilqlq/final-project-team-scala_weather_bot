@@ -12,4 +12,4 @@ object Main:
 
   def main(args: Array[String]): Unit =
     println("Please enter 'help' in order to see detailed information about the supported operations.")
-  while console.continue(readLine().toUpperCase()) do println("")
+    while console.continue(readLine().toUpperCase()) do println("")
