@@ -1,3 +1,5 @@
+package utils
+
 import scala.concurrent.Future
 import scala.util.Properties
 import scala.util.matching.Regex
@@ -13,9 +15,11 @@ object Utils:
     then Future.failed(new IllegalStateException(CITY_CONSTRAINTS_MESSAGE))
     else action(commandArguments)
 
-  val FILE_NAME: String = "file.xlsx"
-  val DATE_WIDTH:Int = 8000
-  val JSON_WIDTH:Int = 12000
+  val FILE_NAME: String = "table.xlsx"
+  val FILE_PATH: String = "src/main/resources/" + FILE_NAME
+  val DATE_WIDTH: Int = 8000
+  val JSON_WIDTH: Int = 12000
+
   val API_KEY: String = Properties.envOrElse("API_KEY", "")
   val NO_HISTORY_MESSAGE: String = "There is no history for this command!"
 

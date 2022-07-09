@@ -1,3 +1,5 @@
+package enums
+
 object CommandEnum extends Enumeration:
   type Type = CommandEnumVal
   val Help = Value("HELP", true)

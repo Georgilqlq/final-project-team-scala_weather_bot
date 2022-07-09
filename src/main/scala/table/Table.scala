@@ -1,3 +1,5 @@
+package table
+
 object Table:
   def plotTable(table: Seq[Seq[Any]]) = println(format(table))
 

@@ -1,7 +1,7 @@
-import requests.Response
+package api
 
-import scala.concurrent.Future
-import scala.util.Properties
+import requests.Response
+import utils.Utils
 
 object ApiRequest:
   val weather_api = "http://api.weatherapi.com/v1"
