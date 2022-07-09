@@ -4,7 +4,7 @@ import api.ApiRequest.*
 
 import java.lang
 
-class apiTest extends AnyFlatSpec with Matchers:
+class ApiTest extends AnyFlatSpec with Matchers:
   "formingRequestParameters" should "create a Map with the correct arguments for current" in {
     createRequestParameters("current", "123" :: "Ruse" :: Nil) shouldBe Map(
       "key" -> "123",

@@ -8,7 +8,7 @@ import parsing.*
 
 import java.io.FileInputStream
 
-class jsonParserTest extends AnyFlatSpec with Matchers:
+class JsonParserTest extends AnyFlatSpec with Matchers :
   val currentJsonResponse =
     "{\"location\":{\"name\":\"Sofia\",\"region\":\"Grad Sofiya\",\"country\":\"Bulgaria\",\"lat\":42.68,\"lon\":23.32,\"tz_id\":\"Europe/Sofia\",\"localtime_epoch\":1656934913,\"localtime\":\"2022-07-04 14:41\"},\"current\":{\"last_updated_epoch\":1656934200,\"last_updated\":\"2022-07-04 14:30\",\"temp_c\":30.0,\"temp_f\":86.0,\"is_day\":1,\"condition\":{\"text\":\"Partly cloudy\",\"icon\":\"//cdn.weatherapi.com/weather/64x64/day/116.png\",\"code\":1003},\"wind_mph\":2.2,\"wind_kph\":3.6,\"wind_degree\":75,\"wind_dir\":\"ENE\",\"pressure_mb\":1018.0,\"pressure_in\":30.06,\"precip_mm\":0.0,\"precip_in\":0.0,\"humidity\":43,\"cloud\":50,\"feelslike_c\":29.4,\"feelslike_f\":84.9,\"vis_km\":10.0,\"vis_miles\":6.0,\"uv\":8.0,\"gust_mph\":6.7,\"gust_kph\":10.8}}"
   val headerExample: Map[String, Seq[String]] = Map(
@@ -156,3 +156,7 @@ class jsonParserTest extends AnyFlatSpec with Matchers:
     inputStream.close()
     workbook.close()
   }
+
+  
+
+  

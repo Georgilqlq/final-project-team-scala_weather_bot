@@ -10,6 +10,7 @@ import service.Service
 
 import java.io.{File, FileInputStream, FileNotFoundException}
 import java.util.regex.Pattern
+import javax.management.openmbean.InvalidKeyException
 import scala.beans.BeanProperty
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -82,7 +83,7 @@ class Console(
       }
 
   def extractArguments(commandLine: String, command: String): List[String] =
-    val index = (commandLine indexOf command) + command.size
+    val index = (commandLine indexOf command) + command.length
     val args = commandLine.substring(index)
     args.split(' ').toList.filter(!_.isBlank)
 
@@ -96,7 +97,7 @@ class Console(
       case e: IllegalStateException =>
         Future.successful(
           println(
-            e.getMessage() + "Please enter 'help' in order to see detailed information about the supported operations."
+            e.getMessage + "Please enter 'help' in order to see detailed information about the supported operations."
           )
         )
       case e: RequestFailedException =>
@@ -105,6 +106,8 @@ class Console(
         Future.successful(println("The requested element was not found!" + e.getMessage))
       case e: FileNotFoundException =>
         Future.successful(println("There was an error with the logging file!" + e.getMessage))
+      case e: InvalidKeyException =>
+        Future.successful(println("There was an error with the request!" + e.getMessage))
       case e: Exception =>
         Future.successful(
           println(
