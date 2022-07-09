@@ -14,6 +14,9 @@ object Utils:
     else action(commandArguments)
 
   val FILE_NAME: String = "file2.xlsx"
+  val DATE_WIDTH: Int = 8000
+  val JSON_WIDTH: Int = 12000
+
   val API_KEY: String = Properties.envOrElse("API_KEY", "")
   val NO_HISTORY_MESSAGE: String = "There is no history for this command!"
 
