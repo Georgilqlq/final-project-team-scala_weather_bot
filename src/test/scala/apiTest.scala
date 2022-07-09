@@ -34,3 +34,22 @@ class apiTest extends AnyFlatSpec with Matchers :
   it should "throw an error if the command is not supported" in{
     the [IllegalStateException] thrownBy createRequestParameters("cricket","123" :: "Plovdiv" :: Nil) should have message "Invalid command"
   }
+
+  "createUrlString" should "append the command football to the url" in {
+    createUrlString("football") shouldBe weather_api ++ "/sports.json"
+  }
+
+  it should "append any command to the url" in {
+    val command = "something"
+    createUrlString(command) shouldBe weather_api ++ s"/$command.json"
+  }
+
+  "makeApiRequest" should "create a failed Request - invalid command" in {
+  val testRequest = makeApiRequest("invalidCommand",Nil)
+  testRequest.statusCode shouldBe 404
+  }
+
+  it should "create a invalid Request - invalid arguments" in {
+    val testRequest = makeApiRequest("current",Nil)
+    testRequest.statusCode shouldBe 401
+  }
