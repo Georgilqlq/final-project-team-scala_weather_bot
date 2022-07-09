@@ -4,11 +4,11 @@ import utils.Utils.NO_HISTORY_MESSAGE
 import enums.CommandEnum
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.status.StatusLogger
-import org.apache.poi.xssf.usermodel.{XSSFSheet, XSSFWorkbook}
+import org.apache.poi.xssf.usermodel.{XSSFRow, XSSFSheet, XSSFWorkbook}
 import parsing.JsonToObjectParser
 import utils.Utils
 
-import java.io.{File, FileInputStream}
+import java.io.{File, FileInputStream, FileOutputStream}
 import scala.beans.BeanProperty
 
 class TableManager(
@@ -65,3 +65,26 @@ class TableManager(
       case CommandEnum.Timezone.value => (CommandEnum.Timezone.value.toLowerCase, jsonToObjectParser.jsonToTimeZone)
       case CommandEnum.Football.value => (CommandEnum.Football.value.toLowerCase, jsonToObjectParser.jsonToFootball)
       case _ => throw new IllegalStateException("Wrong command for searching in sheet!")
+
+  def deleteAllSheets: Unit =
+    val myFile = new File(Utils.FILE_PATH)
+    val fis = new FileInputStream(myFile)
+    val myWorkbook = new XSSFWorkbook(fis)
+
+    List(CommandEnum.Current, CommandEnum.Forecast, CommandEnum.Astronomy, CommandEnum.Timezone, CommandEnum.Football)
+      .map(_.value.toLowerCase)
+      .filter(myWorkbook.getSheet(_) != null)
+      .filter(myWorkbook.getSheet(_).getLastRowNum >= 1)
+      .foreach(name =>
+        List
+          .range(1, myWorkbook.getSheet(name).getLastRowNum + 1)
+          .foreach(rowNumber =>
+            val currentSheet: XSSFSheet = myWorkbook.getSheet(name)
+            val lastCellNumber: Int = currentSheet.getRow(rowNumber).getLastCellNum
+            val removingRow: XSSFRow = currentSheet.getRow(rowNumber)
+            currentSheet.removeRow(removingRow)
+          )
+      )
+    val fileOut: FileOutputStream = new FileOutputStream(Utils.FILE_PATH)
+    myWorkbook.write(fileOut)
+    println("History was successfully deleted!")
