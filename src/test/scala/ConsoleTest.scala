@@ -4,7 +4,9 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.mockito.MockitoSugar.mock
 import org.mockito.Mockito.{times, verify, when}
+import requests.{RequestFailedException, Response}
 
+import java.io.FileNotFoundException
 import scala.concurrent.Future
 import scala.language.postfixOps
 
@@ -187,6 +189,51 @@ class ConsoleTest extends AnyFlatSpec with Matchers:
     val console: Console = new Console(serviceMock)
 
     when(serviceMock.checkArgs(any(), any(), any())).thenReturn(Future.successful {})
+
+    console.caller("CURRENT SOFIA", "CURRENT", serviceMock.current, false)
+
+    verify(serviceMock, times(1)).checkArgs(
+      ArgumentMatchers.eq(List("SOFIA")),
+      any(),
+      ArgumentMatchers.eq(false)
+    )
+  }
+
+  "caller" should "should return future successful when checkArgs returns NoSuchElementException" in {
+    val serviceMock = mock[Service]
+    val console: Console = new Console(serviceMock)
+
+    when(serviceMock.checkArgs(any(), any(), any())).thenReturn(Future.failed(new NoSuchElementException("Exception")))
+
+    console.caller("CURRENT SOFIA", "CURRENT", serviceMock.current, false)
+
+    verify(serviceMock, times(1)).checkArgs(
+      ArgumentMatchers.eq(List("SOFIA")),
+      any(),
+      ArgumentMatchers.eq(false)
+    )
+  }
+
+  "caller" should "should return future successful when checkArgs returns FileNotFoundException" in {
+    val serviceMock = mock[Service]
+    val console: Console = new Console(serviceMock)
+
+    when(serviceMock.checkArgs(any(), any(), any())).thenReturn(Future.failed(new FileNotFoundException("Exception")))
+
+    console.caller("CURRENT SOFIA", "CURRENT", serviceMock.current, false)
+
+    verify(serviceMock, times(1)).checkArgs(
+      ArgumentMatchers.eq(List("SOFIA")),
+      any(),
+      ArgumentMatchers.eq(false)
+    )
+  }
+
+  "caller" should "should return future successful when checkArgs returns Exception" in {
+    val serviceMock = mock[Service]
+    val console: Console = new Console(serviceMock)
+
+    when(serviceMock.checkArgs(any(), any(), any())).thenReturn(Future.failed(new Exception("Exception")))
 
     console.caller("CURRENT SOFIA", "CURRENT", serviceMock.current, false)
 
